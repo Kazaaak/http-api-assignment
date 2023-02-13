@@ -1,13 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-  
-  <script>
 
+  <script>
+    const handleResponse = async (response) => {
+
+      //Grab the content section
+      const content = document.querySelector('#content');
+
+      //Based on the status code, display something
+      switch (response.status) {
+        case 200: //success
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 400: //bad request
+          content.innerHTML = `<b>Bad Request</b>`;
+          break;
+        case 401: //unauthorized
+          content.innerHTML = `<b>Unauthorized</b>`;
+          break;
+        case 403: //forbidden
+          content.innerHTML = `<b>Forbidden</b>`;
+          break;
+        case 500: //internal
+          content.innerHTML = `<b>Internal Server Error</b>`;
+          break;
+        case 501: //not implemented
+          content.innerHTML = `<b>Not Implemented</b>`;
+          break;
+        default: //404 any other status code
+          content.innerHTML = `<b>Resource Not Found</b>`;
+          break;
+      }
+
+      //Parse the response to json. 
+      let obj = await response.json();
+
+      //If we have a message, display it.
+      if (obj.message) {
+        content.innerHTML += `<p>${obj.message}</p>`;
+      }
+    };
+
+    const sendPost = async (pageSelect) => {
+      const page = document.querySelector('#page');
+      const type = document.querySelector('#type');
+      const pageValue = page.value;
+      const typeValue = type.value;
+
+      let response = await fetch(post, {
+        method: type,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+      });
+
+      //Once we have a response, handle it.
+      handleResponse(response);
+    }
+
+    const init = () => {
+      const pageSelect = document.querySelector('#page');
+      const sendButton = document.querySelector('#send');
+
+      const send = (e) => {
+        e.preventDefault();
+        sendPost(pageSelect);
+        return false;
+      }
+
+      sendButton.addEventListener('click', send);
+    };
+
+    //When the window loads, run init.
+    window.onload = init;
   </script>
 </head>
+
 <body>
   <section id="top">
     <h3>Status Code Tests</h3>
@@ -29,4 +102,5 @@
   <section id="content">
   </section>
 </body>
+
 </html>
